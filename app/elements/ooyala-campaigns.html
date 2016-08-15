@@ -105,54 +105,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           dataService.getCampaigns()
               .then(function (campaigns) {
+                  that.campaigns = campaigns;
                   that.campaignNames = campaigns.map(c => c.name);
 
-                  let campaignSelection = document.getElementById("campaign-selection"),
-                      goalSelection = document.getElementById("goal-selection"),
-                      dataSelection = document.getElementById("type-selection");
-
-                  campaignSelection.addEventListener("iron-select", function (e) {
-                    let selectedCampaignName = e.detail.item.innerText;
-
-                    that.selectedCampaign = campaigns.find(c => c.name === selectedCampaignName);
-
-                    that.goalNames = that.selectedCampaign["goals"].map(g => g.name);
-                    that.isGoalSelectionDisabled = false;
-                    goalSelection.contentElement.selected = null;
-                    that.isDataSelectionDisabled = true;
-                    dataSelection.selected = null;
-                  });
-
-                  goalSelection.addEventListener("iron-select", function (e) {
-                    let selectedGoalName = e.detail.item.innerText;
-
-                    that.selectedGoal = that.selectedCampaign["goals"].find(c => c.name === selectedGoalName);
-
-                    if (dataSelection.selected) {
-                      that.selectedDataType = dataSelection.selected === "daily" ?  "dailyDataPoints" : "runningDataPoints";
-
-                      that.dataPoints = that.selectedGoal[that.selectedDataType];
-
-                    } else {
-                      that.isDataSelectionDisabled = false;
-                    }
-
-                  });
-
-                  dataSelection.addEventListener("iron-select", function (e) {
-                    that.selectedDataType = e.detail.item.name === "daily" ?  "dailyDataPoints" : "runningDataPoints";
-                    that.dataPoints = that.selectedGoal[that.selectedDataType];
-                    that.hideInstruction = true;
-                  });
+                  that._initializeEventHandlers();
 
                   that.isCampaignSelectionDisabled = false;
                   that.isDataPointsLoaded = true;
-
 
               })
               .catch(function(e) {
                   console.log(e);
               });
+        },
+
+        _initializeEventHandlers: function () {
+            let campaignSelection = document.getElementById("campaign-selection"),
+                goalSelection = document.getElementById("goal-selection"),
+                dataSelection = document.getElementById("type-selection"),
+                that = this;
+
+            campaignSelection.addEventListener("iron-select", function (e) {
+              let selectedCampaignName = e.detail.item.innerText;
+
+              that.selectedCampaign = that.campaigns.find(c => c.name === selectedCampaignName);
+
+              that.goalNames = that.selectedCampaign["goals"].map(g => g.name);
+              that.isGoalSelectionDisabled = false;
+              goalSelection.contentElement.selected = null;
+              that.isDataSelectionDisabled = true;
+              dataSelection.selected = null;
+            });
+
+            goalSelection.addEventListener("iron-select", function (e) {
+              let selectedGoalName = e.detail.item.innerText;
+
+              that.selectedGoal = that.selectedCampaign["goals"].find(c => c.name === selectedGoalName);
+
+              // Make the existing selection from the data types when campaign has changed
+              if (dataSelection.selected) {
+                that.selectedDataType = dataSelection.selected === "daily" ?  "dailyDataPoints" : "runningDataPoints";
+
+                that.dataPoints = that.selectedGoal[that.selectedDataType];
+
+              } else {
+                that.isDataSelectionDisabled = false;
+              }
+
+            });
+
+            dataSelection.addEventListener("iron-select", function (e) {
+              that.selectedDataType = e.detail.item.name === "daily" ?  "dailyDataPoints" : "runningDataPoints";
+              that.dataPoints = that.selectedGoal[that.selectedDataType];
+              that.hideInstruction = true;
+            });
         }
       });
     })();

@@ -1,0 +1,209 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
+
+<dom-module id="ooyala-bar-chart">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      ::content .bar {
+        fill: #90a4ae;
+        cursor: pointer;
+      }
+
+      ::content .bar:hover {
+        fill: #2979ff;
+      }
+
+      ::content .axis path,
+      ::content .axis line {
+        fill: none;
+        stroke: #455a64;
+        shape-rendering: crispEdges;
+      }
+
+      /*
+      ::content .x.axis path {
+        display: none;
+      }*/
+
+      .card {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        margin: 24px;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #757575;
+      }
+
+      .card .circle {
+        display: inline-block;
+        height: 64px;
+        width: 64px;
+        border-radius: 50%;
+        background: #ddd;
+        line-height: 64px;
+        font-size: 30px;
+        color: #555;
+        text-align: center;
+      }
+      .card h1 {
+        font-size: 22px;
+        margin: 16px 0;
+        color: #212121;
+      }
+    </style>
+    <div class="card">
+      <svg class="chart"></svg>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'ooyala-bar-chart',
+
+        properties: {
+          dataPoints: {
+            type: Array,
+            notify: true
+          },
+
+        },
+
+        _createChart: function () {
+            let chart = this.$$(".chart"),
+                chartClone = chart.cloneNode(false);
+
+            chart.remove();
+            this.$$(".card").appendChild(chartClone);
+
+        },
+
+        _renderChart: function (data) {
+            this._createChart();
+
+            function type(d) {
+              d.value = +d.value; // coerce to number
+              return d;
+            }
+
+            let chartEl = this.$$(".chart");
+
+            let containerWidth = this.offsetWidth - 40,
+                containerHeight = containerWidth * 4 / 9;
+
+            containerHeight = containerHeight < 400 ? 400 : containerHeight;
+
+
+            let margin = {top: 20, right: 30, bottom: 75, left: 60},
+                width = containerWidth - margin.left - margin.right,
+                height = containerHeight - margin.top - margin.bottom;
+
+            chartEl.setAttribute("width", width);
+            chartEl.setAttribute("width", height);
+
+
+            let nTicksYAxis = (containerWidth < 480) ? 3 : 5,
+                useTiltedXTicks = (data.length > 10) || (containerWidth < 480)
+
+            let x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], .25);
+
+            let y = d3.scale.linear()
+                .range([height, 0]);
+
+            x.domain(data.map(function(d) { return d.date; }));
+            y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+
+            let xAxis = d3.svg.axis()
+                .scale(x)
+                .tickSize(3)
+                .orient("bottom");
+
+            if (useTiltedXTicks || containerWidth < 480) {
+                xAxis.tickValues(x.domain().filter( (d, i) => !(i % 7) ));
+            }
+
+            let yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left")
+                .tickSize(3)
+                .ticks(nTicksYAxis);
+
+            let chart = d3.select(".chart")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+            chart.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+
+            if (useTiltedXTicks) {
+                chart.selectAll("text")
+                  .style("text-anchor", "start")
+                  .style("font-size", "14px")
+                  .attr("dx", "0em")
+                  .attr("dy", "1.5em")
+                  .attr("transform", "rotate(45)");
+            } else {
+                chart.selectAll("text")
+                  .attr("dy", "1.5em");
+            }
+
+            chart.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+            chart.selectAll(".bar")
+                .data(data)
+              .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(d.date); })
+                .attr("y", function(d) { return y(d.value); })
+                .attr("height", function(d) { return height - y(d.value); })
+                .attr("width", x.rangeBand());
+
+        },
+
+        ready: function() {
+          let barChart = this;
+
+          this.addEventListener("data-points-changed", function (e) {
+            barChart._renderChart(barChart.dataPoints);
+          }, false);
+
+          window.addEventListener("resize", function (e) {
+
+            // TODO: Think about this solution
+            window.setTimeout(function() {
+              barChart._renderChart(barChart.dataPoints);
+            }, 1000);
+
+          }, false);
+        }
+      });
+    })();
+  </script>
+</dom-module>

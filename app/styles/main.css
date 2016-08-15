@@ -1,0 +1,58 @@
+/*
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+body {
+  background: #fafafa;
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333;
+}
+
+/*
+ This class is used when we manage the focus start point (like when a new page
+ is loaded). We typically move the focus start point to the first header in the
+ page and don't want a focus ring to display. Instead the next time the user
+ presses tab the focus ring will appear on the nearest, focusable element.
+*/
+.focus-target {
+  outline: none;
+}
+
+.card {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  margin: 24px;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #757575;
+}
+
+.card-title {
+  overflow: auto;
+  zoom: 1;
+}
+
+.card-title .circle {
+  display: inline-block;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background: #ddd;
+  line-height: 40px;
+  font-size: 20px;
+  color: #555;
+  text-align: center;
+  float: left;
+}
+.card-title h1 {
+  font-size: 20px;
+  margin: 10px 0;
+  color: #212121;
+  margin-left: 50px;
+}

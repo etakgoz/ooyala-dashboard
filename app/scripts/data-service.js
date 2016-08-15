@@ -2,12 +2,22 @@
   w.OOYALA = w.OOYALA || {};
   const OOYALA = w.OOYALA;
 
+  /**
+   * Represents data point collected in a given day
+   * @param {string} type  "Running" or "Daily"
+   * @param {string} date  Date in YYYY-MM-DD form
+   * @param {number} value Data point value
+   */
   OOYALA.DataPoint = function (type, date, value) {
       this.type = type; // "Running" or "Daily"
       this.date = date;
       this.value = value;
   };
 
+  /**
+   * Represents a campaign goal data set
+   * @param {object} rawGoalData Raw goal data acquired from web service
+   */
   OOYALA.CampaignGoal = function (rawGoalData) {
       this.name = rawGoalData["name"];
 
@@ -49,6 +59,10 @@
   };
 
 
+  /**
+   * Represents OOYALA campaign data
+   * @param {object} rawCampaignData Raw Campaign Data acquired
+   */
   OOYALA.Campaign = function (rawCampaignData) {
       this.name = rawCampaignData["name"];
       this.goals = rawCampaignData["goals"].map(function (rawGoalData) {
@@ -56,8 +70,16 @@
       });
   };
 
+  /**
+   * OOYALA Data Service, provides interface to the web services
+   * @param {[type]} serviceUrl [description]
+   */
   OOYALA.DataService = function (serviceUrl) {
 
+      /**
+       * Returns campaign data as an array of OOYALA.Campaign objects via a promise.
+       * @return {object} Promise
+       */
       this.getCampaigns = function () {
           return fetch(serviceUrl)
                   .then(function(response) {

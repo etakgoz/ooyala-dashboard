@@ -65,10 +65,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 16px 0;
         color: #212121;
       }
+
+      ::content .data-tip {
+        background: #fcfcfc;
+        border: solid 1px #9c9c9c;
+        line-height: 36px;
+        font-size: 16px;
+        color: #555;
+        text-align: center;
+        display: block;
+        width: 120px;
+        height: 36px;
+        position: absolute;
+      }
+
+      ::content .data-tip.invisible {
+        display: none;
+      };
     </style>
     <div class="card">
       <svg class="chart"></svg>
     </div>
+    <div class="data-tip invisible">Data tip</div>
   </template>
 
   <script>
@@ -135,7 +153,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   left: that.paddingLeft
                 },
                 width = containerWidth - margin.left - margin.right,
-                height = containerHeight - margin.top - margin.bottom;
+                height = containerHeight - margin.top - margin.bottom,
+                drawerWidth = document.getElementById("drawer").offsetWidth,
+                topBarHeight = document.getElementById("topBar").offsetHeight;
 
             chartEl.setAttribute("width", width);
             chartEl.setAttribute("width", height);
@@ -201,6 +221,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 .attr("class", "y axis")
                 .call(yAxis);
 
+            // Shows 10000 as 10 000
+            function numberWithSpaces(x) {
+              return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            }
+
             chart.selectAll(".bar")
                 .data(data)
               .enter().append("rect")
@@ -208,7 +233,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 .attr("x", function(d) { return x(d.date); })
                 .attr("y", function(d) { return y(d.value); })
                 .attr("height", function(d) { return height - y(d.value); })
-                .attr("width", x.rangeBand());
+                .attr("width", x.rangeBand())
+                .on("mouseover", function() { that.$$(".data-tip").classList.add("invisible"); })
+                .on("mouseout", function() { that.$$(".data-tip").classList.add("invisible");})
+                .on("mousemove", function(d) {
+
+                  let x = d3.event.pageX - drawerWidth - 60;
+                  let y = d3.event.pageY - topBarHeight + 20;
+
+                  that.$$(".data-tip").style.top = y + "px";
+                  that.$$(".data-tip").style.left = x + "px";
+
+                  if (that.$$(".data-tip").classList.contains("invisible")) {
+                    that.$$(".data-tip").innerText = numberWithSpaces(d.value) + " views";
+
+                    that.$$(".data-tip").classList.remove("invisible");
+                  }
+                });
 
         },
 

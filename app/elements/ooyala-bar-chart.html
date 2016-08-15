@@ -84,6 +84,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true
           },
 
+          paddingRight: {
+            type: Number,
+            notify: true
+          },
+
+          paddingLeft: {
+            type: Number,
+            notify: true
+          },
+
+          paddingTop: {
+            type: Number,
+            notify: true
+          },
+
+          paddingBottom: {
+            type: Number,
+            notify: true
+          }
+
         },
 
         _createChart: function () {
@@ -96,22 +116,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         _renderChart: function (data) {
+            const MOBILE_BREAKPOINT = 780;
+
+            let that = this;
             this._createChart();
 
-            function type(d) {
-              d.value = +d.value; // coerce to number
-              return d;
-            }
-
-            let chartEl = this.$$(".chart");
-
-            let containerWidth = this.offsetWidth - 40,
+            // Setup chart dimensions
+            let chartEl = this.$$(".chart"),
+                containerWidth = this.offsetWidth - 40,
                 containerHeight = containerWidth * 4 / 9;
 
             containerHeight = containerHeight < 400 ? 400 : containerHeight;
 
-
-            let margin = {top: 20, right: 30, bottom: 75, left: 75},
+            let margin = {
+                  top: that.paddingTop,
+                  right: that.paddingRight,
+                  bottom: that.paddingBottom,
+                  left: that.paddingLeft
+                },
                 width = containerWidth - margin.left - margin.right,
                 height = containerHeight - margin.top - margin.bottom;
 
@@ -119,8 +141,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             chartEl.setAttribute("width", height);
 
 
-            let nTicksYAxis = (containerWidth < 480) ? 3 : 5,
-                useTiltedXTicks = (data.length > 10) || (containerWidth < 480)
+            // Setup scales and axes
+            let nTicksYAxis = (containerWidth < MOBILE_BREAKPOINT) ? 3 : 5,
+                useTiltedXTicks = (data.length > 10) || (containerWidth < MOBILE_BREAKPOINT)
 
             let x = d3.scale.ordinal()
                 .rangeRoundBands([0, width], .25);
@@ -137,7 +160,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 .tickSize(3)
                 .orient("bottom");
 
-            if (useTiltedXTicks || containerWidth < 480) {
+            if (useTiltedXTicks || containerWidth < MOBILE_BREAKPOINT) {
                 xAxis.tickValues(x.domain().filter( (d, i) => !(i % 7) ));
             }
 
@@ -169,9 +192,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   .attr("transform", "rotate(45)");
             } else {
                 chart.selectAll("text")
+                  .style("font-size", "15px")
                   .attr("dy", "1.5em");
             }
 
+            // Render bar data
             chart.append("g")
                 .attr("class", "y axis")
                 .call(yAxis);
@@ -196,10 +221,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           window.addEventListener("resize", function (e) {
 
-            // TODO: Think about this solution
-            window.setTimeout(function() {
-              barChart._renderChart(barChart.dataPoints);
-            }, 1000);
+            if (barChart.dataPoints) {
+              // TODO: Think about this solution
+              window.setTimeout(function() {
+                barChart._renderChart(barChart.dataPoints);
+              }, 1000);
+            }
+
 
           }, false);
         }

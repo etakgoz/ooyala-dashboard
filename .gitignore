@@ -3,3 +3,6 @@ dist
 bower_components
 .tmp
 .publish/
+.firebaserc
+firebase.json
+todo.md

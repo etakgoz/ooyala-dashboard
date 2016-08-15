@@ -35,13 +35,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-top: 20px;
       }
 
-      h1 { margin-left: 25px; }
 
       .card .instruction { text-align: center; }
 
+      #refres-button {
+        font-size: 16px;
+      }
+      ::content .title {
+        margin-left: 25px;
+        margin-right: 25px;
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+      }
+
+      ::content .title h1 {
+        @apply(--layout-flex-11);
+      }
+
+      ::content .title .button {
+        @apply(--layout-flex-1);
+        margin: 15px 0;
+      }
+
     </style>
 
-    <h1>Campaigns</h1>
+    <div class="title">
+      <h1>Campaigns</h1>
+      <paper-button raised class="button" id="refresh-button"><iron-icon icon="refresh"></iron-icon>Refresh</paper-button>
+    </div>
 
     <div id="data-selection">
       <div>
@@ -72,7 +93,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <p class="instruction">Please make your selection from above...</p>
     </div>
 
-    <ooyala-bar-chart data-points="{{dataPoints}}"></ooyala-bar-chart>
+    <ooyala-bar-chart data-points="{{dataPoints}}" padding-right="30" padding-top="20" padding-left="75" padding-bottom="75"></ooyala-bar-chart>
+
+
+
 
   </template>
 
@@ -90,29 +114,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         hideInstruction: false,
 
         ready: function() {
+          this.isCampaignSelectionDisabled = true;
+          this.isGoalSelectionDisabled = true;
+          this.isDataSelectionDisabled = true;
+
+          this.selectedCampaign = null;
+          this.selectedGoal = null;
+          this.selectedDataType = null;
+
+          this._fetchData(true);
+        },
+
+        _fetchData: function (initialize) {
+          let that = this;
 
           let dataService = new window.OOYALA.DataService(this.campaignDataUrl);
-
-          var that = this;
-
-          that.isCampaignSelectionDisabled = true;
-          that.isGoalSelectionDisabled = true;
-          that.isDataSelectionDisabled = true;
-
-          that.selectedCampaign = null;
-          that.selectedGoal = null;
-          that.selectedDataType = null;
 
           dataService.getCampaigns()
               .then(function (campaigns) {
                   that.campaigns = campaigns;
                   that.campaignNames = campaigns.map(c => c.name);
 
-                  that._initializeEventHandlers();
+                  console.log("Fetched campaing data...");
+                  console.log(campaigns);
+
+                  if (initialize) {
+                    that._initializeEventHandlers();
+                  }
 
                   that.isCampaignSelectionDisabled = false;
                   that.isDataPointsLoaded = true;
-
               })
               .catch(function(e) {
                   console.log(e);
@@ -120,9 +151,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         _initializeEventHandlers: function () {
-            let campaignSelection = document.getElementById("campaign-selection"),
-                goalSelection = document.getElementById("goal-selection"),
-                dataSelection = document.getElementById("type-selection"),
+            let campaignSelection = this.$$("#campaign-selection"),
+                goalSelection = this.$$("#goal-selection"),
+                dataSelection = this.$$("#type-selection"),
+                refreshButton = this.$$("#refresh-button"),
                 that = this;
 
             campaignSelection.addEventListener("iron-select", function (e) {
@@ -158,6 +190,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               that.selectedDataType = e.detail.item.name === "daily" ?  "dailyDataPoints" : "runningDataPoints";
               that.dataPoints = that.selectedGoal[that.selectedDataType];
               that.hideInstruction = true;
+            });
+
+            refreshButton.addEventListener("click", function (e) {
+              that._fetchData(false);
+              if (that.selectedGoal) {
+                that.selectedCampaign = that.campaigns.find(c => c.name === that.selectedCampaign.name);
+                that.goalNames = that.selectedCampaign["goals"].map(g => g.name);
+                that.selectedGoal = that.selectedCampaign["goals"].find(c => c.name === that.selectedGoal.name);
+
+                if (that.selectedDataType) {
+                  that.dataPoints = that.selectedGoal[that.selectedDataType];
+                }
+              }
             });
         }
       });

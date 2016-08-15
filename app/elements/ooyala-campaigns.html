@@ -127,8 +127,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     let selectedGoalName = e.detail.item.innerText;
 
                     that.selectedGoal = that.selectedCampaign["goals"].find(c => c.name === selectedGoalName);
-                    that.isDataSelectionDisabled = false;
-                    dataSelection.selected = null;
+
+                    if (dataSelection.selected) {
+                      that.selectedDataType = dataSelection.selected === "daily" ?  "dailyDataPoints" : "runningDataPoints";
+
+                      that.dataPoints = that.selectedGoal[that.selectedDataType];
+
+                    } else {
+                      that.isDataSelectionDisabled = false;
+                    }
 
                   });
 
@@ -136,7 +143,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     that.selectedDataType = e.detail.item.name === "daily" ?  "dailyDataPoints" : "runningDataPoints";
                     that.dataPoints = that.selectedGoal[that.selectedDataType];
                     that.hideInstruction = true;
-                    that.hideChart = false;
                   });
 
                   that.isCampaignSelectionDisabled = false;

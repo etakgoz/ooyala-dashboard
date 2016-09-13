@@ -1,6 +1,6 @@
 # Ooyala Dashboard
 
-Ooyala charting dashboard made with web compoenents and polymer starting kit: https://github.com/PolymerElements/polymer-starter-kit
+Ooyala charting dashboard made with web components and polymer starting kit: https://github.com/PolymerElements/polymer-starter-kit
 
 ## Installation
 
